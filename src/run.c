@@ -2,8 +2,6 @@
 
 #include "run.h"
 
-extern const char* DEFAULT_XDG_DIRECTORY;
-
 void search(search_type_e type, uint8_t location_mask);
 void new(new_template_e template, char* title);
 void run(run_parameters_t rp) {

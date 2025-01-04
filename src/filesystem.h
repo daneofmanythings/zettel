@@ -1,10 +1,12 @@
 #ifndef FILESYSTEM_FILESYSTEM_H
 #define FILESYSTEM_FILESYSTEM_H
 
-#include <stdio.h>
+#include <limits.h>
+#include <stdbool.h>
 
 typedef struct filepath_t filepath_t;
 
-filepath_t *filepath_create(char *path);
+void prep_environment();
+void expand_path_env_variables(char dest[PATH_MAX], const char* path);
 
 #endif // !DEBUG

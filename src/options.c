@@ -56,7 +56,7 @@ bool determine_title(char title[NAME_MAX], int argc, char** argv) {
 }
 
 new_mode_params_t determine_new_params(int argc, char** argv) {
-  new_mode_params_t params;
+  new_mode_params_t params = {0};
   // TODO: check bounding
   params.template = determine_template(argv[2]);
   if (!determine_title(params.title, argc, argv)) {
@@ -112,7 +112,7 @@ run_parameters_t run_parameters_create(int argc, char** argv) {
   // dispatch on mode
   switch (run_parameters.mode) {
   case NEW:
-    run_parameters.parameters.new = determine_new_params(argc, argv);
+    run_parameters.params.new = determine_new_params(argc, argv);
     break;
   case SEARCH:
     if (argc < 3) {
@@ -120,7 +120,7 @@ run_parameters_t run_parameters_create(int argc, char** argv) {
       fprintf(stderr, "need options for search\n");
       exit(1);
     }
-    run_parameters.parameters.search = determine_search_params(argc, argv);
+    run_parameters.params.search = determine_search_params(argc, argv);
     break;
   default: // INVALID
            // TODO: handle this failure state;

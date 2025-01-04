@@ -84,7 +84,7 @@ typedef struct run_parameters {
   union {
     new_mode_params_t new;
     search_mode_params_t search;
-  } parameters;
+  } params;
 } run_parameters_t;
 run_parameters_t run_parameters_create(int argc, char** argv);
 
