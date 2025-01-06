@@ -6,21 +6,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-mode_e determine_mode(char* mode) {
+mode_defaults_index determine_mode(char* mode) {
   size_t i;
-  for (i = 0; strcmp(modes[i], "\0") != 0; i++) {
-    if (strcmp(mode, modes[i]) == 0) {
-      break;
-    }
-    // also valid to use the single letter.
-    if (strlen(mode) == 1 && strncmp(mode, modes[i], 1) == 0) {
+  bool is_name_match;
+  bool is_short_name_match;
+  for (i = 0; strcmp(MODE_DEFAULTS[i].name, "\0") != 0; i++) {
+    is_name_match = strcmp(mode, MODE_DEFAULTS[i].name) == 0;
+    is_short_name_match = strcmp(mode, MODE_DEFAULTS[i].short_name) == 0;
+    if (is_name_match || is_short_name_match) {
       break;
     }
   }
   return i;
 }
 
-new_template_e determine_template(char* template_args) {
+template_defaults_index determine_template(char* template_args) {
   size_t len = strlen(template_args);
   if (len < 2) {
     return INVALID_TEMPLATE;
@@ -32,40 +32,44 @@ new_template_e determine_template(char* template_args) {
   }
   size_t i;
   char* t = &template_args[1];
-  for (i = 0; strcmp(templates[i], "\0") != 0; i++) {
-    if (strncmp(t, templates[i], 1) == 0) {
+  for (i = 0; strcmp(TEMPLATE_DEFAULTS[i].short_name, "\0") != 0; i++) {
+    if (strncmp(t, TEMPLATE_DEFAULTS[i].short_name, 1) == 0) {
       break;
     }
   }
   return i;
 }
 
-// WARN: this should probably return an error, not a bool
-bool determine_title(char title[NAME_MAX], int argc, char** argv) {
+void determine_content(template_defaults_index template, char content[NAME_MAX], int argc, char** argv) {
+  char filler;
+  if (template == SCRATCH) {
+    filler = ' ';
+  } else {
+    filler = '.';
+  }
+
   if (argc < 4) {
-    return false;
+    return;
   }
   // TODO: bounds check the length of the title so it doesn't overflow.
-  char* title_ptr = title;
+  char* content_ptr = content;
   for (size_t i = 3; i < argc; i++) {
-    title_ptr = stpcpy(title_ptr, argv[i]);
-    *title_ptr++ = '.';
+    content_ptr = stpcpy(content_ptr, argv[i]);
+    *content_ptr++ = filler;
   }
-  *(--title_ptr) = '\0';
-  return true;
+  *(--content_ptr) = '\0';
+  return;
 }
 
 new_mode_params_t determine_new_params(int argc, char** argv) {
   new_mode_params_t params = {0};
   // TODO: check bounding
   params.template = determine_template(argv[2]);
-  if (!determine_title(params.title, argc, argv)) {
-    // handle error
-  }
+  determine_content(params.template, params.content, argc, argv);
   return params;
 }
 
-search_type_e determine_search(char* search_args) {
+search_type_defaults_index determine_search_type(char* search_args) {
   size_t len = strlen(search_args);
   if (len < 2) {
     return INVALID_SEARCH;
@@ -76,9 +80,8 @@ search_type_e determine_search(char* search_args) {
     return INVALID_SEARCH;
   }
   size_t i;
-  char* t = &search_args[1];
-  for (i = 0; strcmp(searches[i], "\0") != 0; i++) {
-    if (strncmp(t, searches[i], 1) == 0) {
+  for (i = 0; strcmp(SEARCH_TYPE_DEFAULTS[i].name, "\0") != 0; ++i) {
+    if (strncmp(&search_args[1], SEARCH_TYPE_DEFAULTS[i].short_name, 1) == 0) {
       break;
     }
   }
@@ -91,8 +94,8 @@ uint8_t determine_search_locations(char* search_args) {
   // TODO: add full name functionality?
 
   uint8_t location_mask = 0;
-  for (size_t i = 0; strcmp(search_locations[i], "\0") != 0; ++i) {
-    if (strchr(search_args, search_locations[i][0])) {
+  for (size_t i = 0; strcmp(SEARCH_LOCATION_DEFAULTS[i].name, "\0") != 0; ++i) {
+    if (strchr(search_args, *SEARCH_LOCATION_DEFAULTS[i].short_name)) {
       location_mask += pow(2, i);
     }
   }
@@ -101,7 +104,7 @@ uint8_t determine_search_locations(char* search_args) {
 
 search_mode_params_t determine_search_params(int argc, char** argv) {
   search_mode_params_t params = {0};
-  params.type = determine_search(argv[2]);
+  params.type = determine_search_type(argv[2]);
   params.locations = determine_search_locations(argv[2]);
   return params;
 }

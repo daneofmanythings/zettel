@@ -11,7 +11,7 @@
 
 struct determine_mode_test_case {
   char* input;
-  mode_e expected;
+  mode_defaults_index expected;
 };
 ParameterizedTestParameters(options, determine_mode) {
   static struct determine_mode_test_case tcs[] = {
@@ -26,13 +26,13 @@ ParameterizedTestParameters(options, determine_mode) {
   return cr_make_param_array(struct determine_mode_test_case, tcs, size);
 }
 ParameterizedTest(struct determine_mode_test_case* tc, options, determine_mode) {
-  mode_e result = determine_mode(tc->input);
+  mode_defaults_index result = determine_mode(tc->input);
   cr_assert(eq(u8, result, tc->expected), "input='%s'\n", tc->input);
 }
 
 struct determine_template_test_case {
   char* input;
-  new_template_e expected;
+  template_defaults_index expected;
 };
 ParameterizedTestParameters(options, determine_template) {
   static struct determine_template_test_case tcs[] = {
@@ -51,16 +51,16 @@ ParameterizedTestParameters(options, determine_template) {
   return cr_make_param_array(struct determine_template_test_case, tcs, size);
 }
 ParameterizedTest(struct determine_template_test_case* tc, options, determine_template) {
-  new_template_e result = determine_template(tc->input);
+  template_defaults_index result = determine_template(tc->input);
   cr_assert(eq(int, result, tc->expected), "input='%s'\n", tc->input);
 }
 
-struct determine_search_test_case {
+struct determine_search_type_test_case {
   char* input;
-  search_type_e expected;
+  search_type_defaults_index expected;
 };
-ParameterizedTestParameters(options, determine_search) {
-  static struct determine_search_test_case tcs[] = {
+ParameterizedTestParameters(options, determine_search_type) {
+  static struct determine_search_type_test_case tcs[] = {
       {"-fk\0",   FILENAMES     },
       {"f\0",     INVALID_SEARCH},
       {"fh\0",    INVALID_SEARCH},
@@ -70,11 +70,11 @@ ParameterizedTestParameters(options, determine_search) {
       {"-t\0",    INVALID_SEARCH},
       {" \0",     INVALID_SEARCH},
   };
-  size_t size = sizeof(tcs) / sizeof(struct determine_search_test_case);
-  return cr_make_param_array(struct determine_search_test_case, tcs, size);
+  size_t size = sizeof(tcs) / sizeof(struct determine_search_type_test_case);
+  return cr_make_param_array(struct determine_search_type_test_case, tcs, size);
 }
-ParameterizedTest(struct determine_search_test_case* tc, options, determine_search) {
-  search_type_e result = determine_search(tc->input);
+ParameterizedTest(struct determine_search_type_test_case* tc, options, determine_search_type) {
+  search_type_defaults_index result = determine_search_type(tc->input);
   cr_assert(eq(int, result, tc->expected), "input='%s'\n", tc->input);
 }
 
@@ -111,8 +111,8 @@ ParameterizedTestParameters(options, determine_locations) {
       {"-k",      1 },
       {"-p",      2 },
       {"-s",      4 },
-      {"-a",      8 },
-      {"-j",      16},
+      {"-j",      8 },
+      {"-a",      16},
       {"-saj",    28},
       {"-pp",     2 },
       {"-psjka",  31},
@@ -132,16 +132,16 @@ ParameterizedTest(struct determine_locations_test_case* tc, options, determine_l
 struct run_parameters_create_test_case {
   int argc;
   char* argv_str;
-  mode_e mode;
-  new_template_e template;
+  mode_defaults_index mode;
+  template_defaults_index template;
   char* title;
-  search_type_e search_type;
+  search_type_defaults_index search_type;
   uint8_t locations;
 }; // TODO: ADD MORE TESTS. THIS IS THE IMPORTANT ONE
 ParameterizedTestParameters(options, run_parameters_create) {
   static struct run_parameters_create_test_case tcs[] = {
       {7, "zet n -k this is a test", NEW,    KNOWLEDGE,        "this.is.a.test", INVALID_SEARCH, 0 },
-      {3, "zet s -fap",              SEARCH, INVALID_TEMPLATE, NULL,             FILENAMES,      10},
+      {3, "zet s -fap",              SEARCH, INVALID_TEMPLATE, NULL,             FILENAMES,      18},
   };
   size_t size = sizeof(tcs) / sizeof(struct run_parameters_create_test_case);
   return cr_make_param_array(struct run_parameters_create_test_case, tcs, size);

@@ -6,88 +6,115 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// WARNING: order of the enums and arrays are coupled.
-// Do not change one and not the other. Things will break.
+extern const char ZET_KNOWLEDGE[];
+extern const char ZET_PROJECTS[];
+extern const char ZET_SCRATCH[];
+extern const char ZET_JOURNAL[];
+extern const char ZET_ARCHIVE[];
+extern const char KNOWLEDGE_BODY[];
+extern const char PROJECT_BODY[];
+extern const char SCRATCH_BODY[];
+extern const char JOURNAL_BODY[];
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
-
-// Supported modes
-static const char* modes[] = {
-    "new",
-    "search",
-    "\0",
+// TODO: I think these constants may need to go elsewhere. LIKE MAYBE THE CONSTANTS FILE
+typedef struct {
+  const char* name;
+  const char* short_name;
+} mode_defaults_t;
+static const mode_defaults_t MODE_DEFAULTS[] = {
+    {"new",    "n" },
+    {"search", "s" },
+    {"\0",     "\0"},
 };
 typedef enum {
   NEW,
   SEARCH,
   INVALID_MODE,
-} mode_e;
-mode_e determine_mode(char* mode);
+} mode_defaults_index;
 
-// templates for 'new' mode
-static const char* templates[] = {
-    "knowledge",
-    "project",
-    "scratch",
-    "\0",
+typedef struct {
+  const char* name;
+  const char* short_name;
+  const char* path;
+  const char* body;
+} template_defaults_t;
+static const template_defaults_t TEMPLATE_DEFAULTS[] = {
+    {"knowledge", "k",  ZET_KNOWLEDGE, KNOWLEDGE_BODY},
+    {"project",   "p",  ZET_PROJECTS,  PROJECT_BODY  },
+    {"scratch",   "s",  ZET_SCRATCH,   SCRATCH_BODY  },
+    {"journal",   "j",  ZET_JOURNAL,   JOURNAL_BODY  },
+    {"\0",        "\0", "\0",          "\0"          },
 };
 typedef enum {
   KNOWLEDGE,
   PROJECT,
   SCRATCH,
+  JOURNAL,
   INVALID_TEMPLATE,
-} new_template_e;
-new_template_e determine_template(char* template_args);
-bool determine_title(char title_ptr[NAME_MAX], int argc, char** argv);
+} template_defaults_index;
 
-typedef struct new_mode_params {
-  new_template_e template;
-  char title[NAME_MAX];
-} new_mode_params_t;
-new_mode_params_t determine_new_params(int argc, char** argv);
-
-// NOTE: search modes and locations can't have overlapping first characters
-// search types for 'search' mode
-static const char* searches[] = {
-    "filenames",
-    "contents",
-    "\0",
+typedef struct {
+  const char* name;
+  const char* short_name;
+} search_type_defaults_t;
+static const search_type_defaults_t SEARCH_TYPE_DEFAULTS[] = {
+    {"filenames", "f" },
+    {"contents",  "c" },
+    {"\0",        "\0"},
 };
 typedef enum {
   FILENAMES,
   CONTENTS,
   INVALID_SEARCH,
-} search_type_e;
-search_type_e determine_search(char* search_args);
+} search_type_defaults_index;
 
-static const char* search_locations[] = {
-    "knowledges", "projects", "scratches", "archives", "journals", "\0",
+typedef struct {
+  const char* name;
+  const char* short_name;
+  const char* path;
+} search_location_defaults_t;
+static const search_location_defaults_t SEARCH_LOCATION_DEFAULTS[] = {
+    {"knowledge", "k",  ZET_KNOWLEDGE},
+    {"project",   "p",  ZET_PROJECTS },
+    {"scratch",   "s",  ZET_SCRATCH  },
+    {"journal",   "j",  ZET_JOURNAL  },
+    {"archive",   "a",  ZET_ARCHIVE  },
+    {"\0",        "\0", "\0"         },
 };
 typedef enum {
   KNOWLEDGES,
   PROJECTS,
   SCRATCHES,
-  ARCHIVES,
   JOURNALS,
-} search_locations_e;
-uint8_t determine_search_locations(char* search_args);
+  ARCHIVES,
+  INVALID_SEARCH_LOCATION,
+} search_locations_defaults_index;
+
+typedef struct new_mode_params {
+  template_defaults_index template;
+  char content[NAME_MAX];
+} new_mode_params_t;
 
 typedef struct search_mode_params {
-  search_type_e type;
+  search_type_defaults_index type;
   uint8_t locations;
 } search_mode_params_t;
-search_mode_params_t determine_search_params(int argc, char** argv);
 
 typedef struct run_parameters {
-  mode_e mode;
+  mode_defaults_index mode;
   union {
     new_mode_params_t new;
     search_mode_params_t search;
   } params;
 } run_parameters_t;
-run_parameters_t run_parameters_create(int argc, char** argv);
 
-#pragma GCC diagnostic pop
+mode_defaults_index determine_mode(char* mode);
+template_defaults_index determine_template(char* template_args);
+void determine_content(template_defaults_index template, char title_ptr[NAME_MAX], int argc, char** argv);
+new_mode_params_t determine_new_params(int argc, char** argv);
+search_type_defaults_index determine_search_type(char* search_args);
+uint8_t determine_search_locations(char* search_args);
+search_mode_params_t determine_search_params(int argc, char** argv);
+run_parameters_t run_parameters_create(int argc, char** argv);
 
 #endif // !DEBUG
