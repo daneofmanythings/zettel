@@ -78,27 +78,27 @@ ParameterizedTest(struct determine_search_type_test_case* tc, options, determine
   cr_assert(eq(int, result, tc->expected), "input='%s'\n", tc->input);
 }
 
-struct determine_title_test_case {
+struct determine_content_test_case {
   int argc;
   char* argv_str;
+  template_defaults_index template;
   char* expected;
 };
-ParameterizedTestParameters(options, determine_title) {
-  static struct determine_title_test_case tcs[] = {
-      {4, "zet n -p one",             "one\0"            },
-      {5, "zet n -k one two",         "one.two\0"        },
-      {6, "zet n -s one two three",   "one.two.three\0"  },
-      {7, "zet n -k this is a title", "this.is.a.title\0"}
+ParameterizedTestParameters(options, determine_content) {
+  static struct determine_content_test_case tcs[] = {
+      {4, "zet n -p one",             PROJECT,   "one\0"            },
+      {5, "zet n -k one two",         KNOWLEDGE, "one.two\0"        },
+      {6, "zet n -s one two three",   SCRATCH,   "one two three\0"  },
+      {7, "zet n -k this is a title", KNOWLEDGE, "this.is.a.title\0"}
   };
-  size_t size = sizeof(tcs) / sizeof(struct determine_title_test_case);
-  return cr_make_param_array(struct determine_title_test_case, tcs, size);
+  size_t size = sizeof(tcs) / sizeof(struct determine_content_test_case);
+  return cr_make_param_array(struct determine_content_test_case, tcs, size);
 }
-ParameterizedTest(struct determine_title_test_case* tc, options, determine_title) {
+ParameterizedTest(struct determine_content_test_case* tc, options, determine_content) {
   char** argv = split_string_on_delimiter(tc->argv_str, ' ');
-  char title[NAME_MAX] = {0};
-  bool did_fail = determine_title(title, tc->argc, argv);
-  cr_assert_eq(did_fail, true);
-  cr_assert(eq(str, title, tc->expected), "input='%s'\n", tc->argv_str);
+  char content[NAME_MAX] = {0};
+  determine_content(tc->template, content, tc->argc, argv);
+  cr_assert(eq(str, content, tc->expected), "input='%s'\n", tc->argv_str);
   split_string_cleanup(argv);
 }
 
@@ -152,7 +152,7 @@ ParameterizedTest(struct run_parameters_create_test_case* tc, options, run_param
   cr_assert(eq(int, tc->mode, result.mode), "input='%s'\n", tc->argv_str);
   if (tc->mode == NEW) {
     cr_assert(eq(int, tc->template, result.params.new.template), "input='%s'\n", tc->argv_str);
-    cr_assert(eq(str, tc->title, result.params.new.title), "input='%s'\n", tc->argv_str);
+    cr_assert(eq(str, tc->title, result.params.new.content), "input='%s'\n", tc->argv_str);
   }
   if (tc->mode == SEARCH) {
     cr_assert(eq(int, tc->search_type, result.params.search.type), "input='%s'\n", tc->argv_str);

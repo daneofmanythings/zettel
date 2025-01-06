@@ -60,11 +60,7 @@ void expand_path_env_variables(char dest[PATH_MAX], const char* path) {
     // TODO: CHECK NEW PATH LENGTH FOR OVERFLOW BEFORE CONCATENATING
     //
     // do some strcopying into a temp buffer
-    char* tmp = temp_copy;
-    tmp = stpcpy(tmp, temp_inspect);
-    tmp = stpcpy(tmp, temp_env_var_path);
-    tmp = stpcpy(tmp, "/");
-    tmp = stpcpy(tmp, env_end + 1);
+    sprintf(temp_copy, "%s%s/%s", temp_inspect, temp_env_var_path, env_end + 1);
     // transfer to the buffer we inspect
     strcpy(temp_inspect, temp_copy);
   }
